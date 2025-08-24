@@ -18,7 +18,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Play, Pause, Settings, Volume2, VolumeX, Clock, CheckCircle2, Circle, Plus, X, Menu, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useMobile, mobileUtils } from "@/hooks/use-mobile"
 
 interface Todo {
   id: string
@@ -58,9 +57,6 @@ export default function TodoApp() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const { toast } = useToast()
   
-  // Mobile detection
-  const mobileInfo = useMobile()
-
   const today = new Date().toISOString().split("T")[0]
   const todayTodos = todos[today] || []
 
@@ -491,13 +487,6 @@ export default function TodoApp() {
   }
 
   const hasOldTodos = Object.keys(todos).some((date) => date < today && todos[date].length > 0)
-
-  // Mobile optimization effect
-  useEffect(() => {
-    if (mobileInfo.isMobile || mobileInfo.isTouchDevice) {
-      mobileUtils.optimizeForMobile()
-    }
-  }, [mobileInfo.isMobile, mobileInfo.isTouchDevice])
 
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
