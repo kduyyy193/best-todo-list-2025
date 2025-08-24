@@ -27,6 +27,9 @@ interface Todo {
   completed: boolean
   isRunning: boolean
   endTime?: number
+  hasTimer: boolean
+  pausedMinutes?: number
+  pausedSeconds?: number
 }
 
 interface DailyTodos {
@@ -57,9 +60,30 @@ export default function TodoApp() {
   const today = new Date().toISOString().split("T")[0]
   const todayTodos = todos[today] || []
 
+  const playAlertSound = async () => {
+    if (audioEnabled && audioRef.current) {
+      try {
+        audioRef.current.currentTime = 0
+        audioRef.current.volume = 1.0
+        await audioRef.current.play()
+        console.log("Âm thanh đã phát thành công")
+      } catch (error) {
+        console.error("Lỗi phát âm thanh:", error)
+        toast({
+          title: "Không thể phát âm thanh",
+          description: "Vui lòng bật âm thanh để nhận thông báo khi hết giờ",
+          variant: "destructive",
+        })
+      }
+    } else {
+      console.log("Âm thanh bị tắt hoặc audioRef không tồn tại")
+    }
+  }
+
   useEffect(() => {
     audioRef.current = new Audio("/sound-effect-alert.mp3")
     audioRef.current.load()
+    audioRef.current.volume = 1.0
 
     const savedAudioEnabled = localStorage.getItem("todoAudioEnabled")
     if (savedAudioEnabled !== null) {
@@ -77,7 +101,17 @@ export default function TodoApp() {
 
     const savedTodos = localStorage.getItem("todoData")
     if (savedTodos) {
-      setTodos(JSON.parse(savedTodos))
+      const parsedTodos = JSON.parse(savedTodos)
+      const updatedTodos: DailyTodos = {}
+      Object.keys(parsedTodos).forEach((date) => {
+        updatedTodos[date] = parsedTodos[date].map((todo: any) => ({
+          ...todo,
+          hasTimer: todo.hasTimer !== undefined ? todo.hasTimer : (todo.minutes > 0 || todo.seconds > 0),
+          pausedMinutes: todo.pausedMinutes !== undefined ? todo.pausedMinutes : undefined,
+          pausedSeconds: todo.pausedSeconds !== undefined ? todo.pausedSeconds : undefined
+        }))
+      })
+      setTodos(updatedTodos)
     }
   }, [])
 
@@ -96,20 +130,28 @@ export default function TodoApp() {
       Object.keys(updatedTodos).forEach((date) => {
         updatedTodos[date] = updatedTodos[date].map((todo) => {
           if (todo.isRunning && todo.endTime && now >= todo.endTime) {
+            console.log("Todo hết thời gian:", todo.name, "End time:", todo.endTime, "Now:", now)
             hasChanges = true
             if (countdownTodo && countdownTodo.id === todo.id) {
               setShowCountdownPopup(false)
               setCountdownTodo(null)
             }
             if (audioEnabled && audioRef.current) {
+              console.log("Phát âm thanh khi hết giờ")
               audioRef.current.currentTime = 0
-              audioRef.current.play().catch(() => {
+              audioRef.current.volume = 1.0
+              audioRef.current.play().then(() => {
+                console.log("Âm thanh đã phát thành công")
+              }).catch((error) => {
+                console.error("Lỗi phát âm thanh:", error)
                 toast({
                   title: "Không thể phát âm thanh",
                   description: "Vui lòng bật âm thanh để nhận thông báo khi hết giờ",
                   variant: "destructive",
                 })
               })
+            } else {
+              console.log("Âm thanh bị tắt hoặc audioRef không tồn tại")
             }
             toast({
               title: "Hết giờ!",
@@ -130,7 +172,7 @@ export default function TodoApp() {
   }, [todos, audioEnabled, toast, countdownTodo])
 
   useEffect(() => {
-    if (showCountdownPopup && countdownTodo && countdownTodo.endTime) {
+    if (showCountdownPopup && countdownTodo) {
       const interval = setInterval(() => {
         setCurrentTime(Date.now())
       }, 1000)
@@ -168,15 +210,6 @@ export default function TodoApp() {
     const minutes = Number.parseInt(newTodoMinutes) || 0
     const seconds = Number.parseInt(newTodoSeconds) || 0
 
-    if (minutes === 0 && seconds === 0) {
-      toast({
-        title: "Lỗi",
-        description: "Thời gian thực hiện phải lớn hơn 0",
-        variant: "destructive",
-      })
-      return
-    }
-
     const newTodo: Todo = {
       id: Date.now().toString(),
       name: newTodoName.trim(),
@@ -184,6 +217,9 @@ export default function TodoApp() {
       seconds,
       completed: false,
       isRunning: false,
+      hasTimer: minutes > 0 || seconds > 0,
+      pausedMinutes: undefined,
+      pausedSeconds: undefined,
     }
 
     setTodos((prev) => ({
@@ -214,15 +250,25 @@ export default function TodoApp() {
       const updated = { ...prev }
       updated[today] = updated[today].map((todo) => {
         if (todo.id === todoId) {
-          const totalSeconds = todo.minutes * 60 + todo.seconds
+          const minutes = todo.pausedMinutes !== undefined ? todo.pausedMinutes : todo.minutes
+          const seconds = todo.pausedSeconds !== undefined ? todo.pausedSeconds : todo.seconds
+          const totalSeconds = minutes * 60 + seconds
+          
           const updatedTodo = {
             ...todo,
             isRunning: true,
             endTime: now + totalSeconds * 1000,
+            pausedMinutes: undefined,
+            pausedSeconds: undefined
           }
           setCurrentTime(now)
-          setCountdownTodo(updatedTodo)
-          setShowCountdownPopup(true)
+          
+          if (!countdownTodo || countdownTodo.id !== todoId) {
+            setCountdownTodo(updatedTodo)
+            setShowCountdownPopup(true)
+          } else {
+            setCountdownTodo(updatedTodo)
+          }
           return updatedTodo
         }
         return { ...todo, isRunning: false, endTime: undefined }
@@ -232,15 +278,34 @@ export default function TodoApp() {
   }
 
   const handleStopTodo = (todoId: string) => {
-    if (countdownTodo && countdownTodo.id === todoId) {
-      setShowCountdownPopup(false)
-      setCountdownTodo(null)
-    }
     setTodos((prev) => {
       const updated = { ...prev }
-      updated[today] = updated[today].map((todo) =>
-        todo.id === todoId ? { ...todo, isRunning: false, endTime: undefined } : todo,
-      )
+      updated[today] = updated[today].map((todo) => {
+        if (todo.id === todoId) {
+          let pausedMinutes = todo.minutes
+          let pausedSeconds = todo.seconds
+          
+          if (todo.isRunning && todo.endTime) {
+            const remaining = Math.max(0, todo.endTime - Date.now())
+            pausedMinutes = Math.floor(remaining / 60000)
+            pausedSeconds = Math.floor((remaining % 60000) / 1000)
+          }
+          
+          const stoppedTodo = { 
+            ...todo, 
+            isRunning: false, 
+            endTime: undefined,
+            pausedMinutes,
+            pausedSeconds
+          }
+          
+          if (countdownTodo && countdownTodo.id === todoId) {
+            setCountdownTodo(stoppedTodo)
+          }
+          return stoppedTodo
+        }
+        return todo
+      })
       return updated
     })
   }
@@ -346,8 +411,10 @@ export default function TodoApp() {
       
       oldTodos[date].forEach((todo, index) => {
         const status = todo.completed ? "✅ Hoàn thành" : "❌ Chưa hoàn thành"
-        const timeStr = `${todo.minutes}:${todo.seconds.toString().padStart(2, "0")}`
+        const timeStr = todo.hasTimer ? `${todo.minutes}:${todo.seconds.toString().padStart(2, "0")}` : "Không có"
+        const typeStr = todo.hasTimer ? "⏱️ Có timer" : "📝 Task đơn giản"
         content += `${index + 1}. ${todo.name}\n`
+        content += `   ${typeStr}\n`
         content += `   ⏱️ Thời gian: ${timeStr}\n`
         content += `   📊 Trạng thái: ${status}\n\n`
       })
@@ -430,8 +497,32 @@ export default function TodoApp() {
             <p className="text-muted-foreground">Xin chào, {userName}!</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setAudioEnabled(!audioEnabled)}>
+            <Button variant="outline" size="sm" onClick={() => {
+              const newAudioEnabled = !audioEnabled
+              setAudioEnabled(newAudioEnabled)
+              localStorage.setItem("todoAudioEnabled", JSON.stringify(newAudioEnabled))
+            }}>
               {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={async () => {
+                if (audioRef.current) {
+                  console.log("Test âm thanh")
+                  playAlertSound()
+                    console.log("Test âm thanh thành công")
+                    toast({
+                      title: "Test âm thanh",
+                      description: "Âm thanh hoạt động bình thường",
+                    })
+                    toast({
+                      title: "Test âm thanh thất bại",
+                    })
+                  }
+              }}
+            >
+              Test
             </Button>
             <Button
               variant="outline"
@@ -525,9 +616,19 @@ export default function TodoApp() {
                       <h3 className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}>
                         {todo.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {todo.minutes}:{todo.seconds.toString().padStart(2, "0")}
-                      </p>
+                      {todo.hasTimer ? (
+                        <p className="text-sm text-muted-foreground">
+                          ⏱️ {(() => {
+                            const minutes = todo.pausedMinutes !== undefined ? todo.pausedMinutes : todo.minutes
+                            const seconds = todo.pausedSeconds !== undefined ? todo.pausedSeconds : todo.seconds
+                            return `${minutes}:${seconds.toString().padStart(2, "0")}`
+                          })()}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          📝 Task đơn giản
+                        </p>
+                      )}
                     </div>
 
                     {todo.isRunning && todo.endTime && (
@@ -538,7 +639,7 @@ export default function TodoApp() {
                     )}
 
                     <div className="flex items-center gap-2">
-                      {!todo.completed && (
+                      {!todo.completed && todo.hasTimer && (
                         <Button
                           variant={todo.isRunning ? "destructive" : "default"}
                           size="sm"
@@ -665,51 +766,70 @@ export default function TodoApp() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <Dialog open={showCountdownPopup} onOpenChange={setShowCountdownPopup}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <div className="flex items-center justify-between">
-                <DialogTitle className="text-xl font-bold">Đang thực hiện</DialogTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowCountdownPopup(false)
-                    setCountdownTodo(null)
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </DialogHeader>
+        <Dialog  open={showCountdownPopup} onOpenChange={(open) => {
+          if (!open) {
+            if (countdownTodo) {
+              setTodos((prev) => {
+                const updated = { ...prev }
+                updated[today] = updated[today].map((todo) => {
+                  if (todo.id === countdownTodo.id) {
+                    return {
+                      ...todo,
+                      isRunning: false,
+                      endTime: undefined,
+                      pausedMinutes: undefined,
+                      pausedSeconds: undefined
+                    }
+                  }
+                  return todo
+                })
+                return updated
+              })
+              setCountdownTodo(null)
+            }
+          }
+          setShowCountdownPopup(open)
+        }}>
+          <DialogContent  className="sm:max-w-md">
 
-            {countdownTodo && countdownTodo.endTime && (
+            {countdownTodo && (
               <div className="py-8 text-center">
                 <h3 className="text-lg font-semibold mb-6 text-foreground">{countdownTodo.name}</h3>
 
                 <div className="mb-8">
                   <div className="text-6xl font-mono font-bold text-primary mb-2">
                     {(() => {
-                      const remaining = getTimeRemaining(countdownTodo.endTime!)
-                      const minutes = Math.floor(remaining / 60000)
-                      const seconds = Math.floor((remaining % 60000) / 1000)
-                      return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+                      if (countdownTodo.isRunning && countdownTodo.endTime) {
+                        const remaining = getTimeRemaining(countdownTodo.endTime)
+                        const minutes = Math.floor(remaining / 60000)
+                        const seconds = Math.floor((remaining % 60000) / 1000)
+                        return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+                      } else {
+                        const minutes = countdownTodo.pausedMinutes !== undefined ? countdownTodo.pausedMinutes : countdownTodo.minutes
+                        const seconds = countdownTodo.pausedSeconds !== undefined ? countdownTodo.pausedSeconds : countdownTodo.seconds
+                        return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+                      }
                     })()}
                   </div>
-                  <p className="text-sm text-muted-foreground">phút:giây</p>
+                  <p className="text-sm text-muted-foreground">
+                    {countdownTodo.isRunning ? "phút:giây" : "thời gian ban đầu"}
+                  </p>
                 </div>
 
                 <div className="flex justify-center gap-4">
                   <Button
-                    variant="destructive"
+                    variant={countdownTodo.isRunning ? "destructive" : "default"}
                     onClick={() => {
-                      handleStopTodo(countdownTodo.id)
-                      setShowCountdownPopup(false)
+                      if (countdownTodo.isRunning) {
+                        handleStopTodo(countdownTodo.id)
+                      } else {
+                        handleStartTodo(countdownTodo.id)
+                      }
                     }}
                     className="flex items-center gap-2"
                   >
-                    <Pause className="h-4 w-4" />
-                    Dừng
+                    {countdownTodo.isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    {countdownTodo.isRunning ? "Dừng" : "Tiếp tục"}
                   </Button>
 
                   <Button
