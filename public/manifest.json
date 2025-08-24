@@ -1,0 +1,75 @@
+{
+  "name": "Vietnamese Todo App - Quản lý công việc với Timer",
+  "short_name": "Vietnamese Todo",
+  "description": "Ứng dụng Todo List tiếng Việt với timer countdown, thông báo âm thanh, và xuất báo cáo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "vi",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vietnamese Todo App trên Desktop"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vietnamese Todo App trên Mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Thêm Todo mới",
+      "short_name": "Thêm Todo",
+      "description": "Tạo một todo mới với timer",
+      "url": "/?action=add",
+      "icons": [
+        {
+          "src": "/icon-add.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Xem Todo hôm nay",
+      "short_name": "Todo hôm nay",
+      "description": "Xem danh sách todo của hôm nay",
+      "url": "/?action=today",
+      "icons": [
+        {
+          "src": "/icon-today.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

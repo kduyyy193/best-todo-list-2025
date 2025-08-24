@@ -426,7 +426,7 @@ export default function TodoApp() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Todo List</h1>
+            <h1 className="text-3xl font-bold text-foreground">Vietnamese Todo App</h1>
             <p className="text-muted-foreground">Xin chào, {userName}!</p>
           </div>
           <div className="flex items-center gap-2">

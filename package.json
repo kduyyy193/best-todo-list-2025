@@ -1,7 +1,12 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "vietnamese-todo-app",
+  "version": "1.0.0",
   "private": true,
+  "description": "Ứng dụng Todo List tiếng Việt với timer countdown, thông báo âm thanh, và xuất báo cáo",
+  "keywords": ["todo", "vietnamese", "timer", "countdown", "productivity", "pomodoro", "task-management"],
+  "author": "Vietnamese Todo App Team",
+  "license": "MIT",
+  "homepage": "https://vietnamese-todo-app.vercel.app",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
