@@ -16,8 +16,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Play, Pause, Settings, Volume2, VolumeX, Clock, CheckCircle2, Circle, Plus, X } from "lucide-react"
+import { Trash2, Play, Pause, Settings, Volume2, VolumeX, Clock, CheckCircle2, Circle, Plus, X, Menu, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useMobile, mobileUtils } from "@/hooks/use-mobile"
 
 interface Todo {
   id: string
@@ -56,6 +57,9 @@ export default function TodoApp() {
   const [todoToDelete, setTodoToDelete] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const { toast } = useToast()
+  
+  // Mobile detection
+  const mobileInfo = useMobile()
 
   const today = new Date().toISOString().split("T")[0]
   const todayTodos = todos[today] || []
@@ -488,15 +492,25 @@ export default function TodoApp() {
 
   const hasOldTodos = Object.keys(todos).some((date) => date < today && todos[date].length > 0)
 
+  // Mobile optimization effect
+  useEffect(() => {
+    if (mobileInfo.isMobile || mobileInfo.isTouchDevice) {
+      mobileUtils.optimizeForMobile()
+    }
+  }, [mobileInfo.isMobile, mobileInfo.isTouchDevice])
+
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Vietnamese Todo App</h1>
-            <p className="text-muted-foreground">Xin chào, {userName}!</p>
+        {/* Header - Responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">The best Todo App 2025</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Xin chào, {userName}!</p>
           </div>
-          <div className="flex items-center gap-2">
+          
+          {/* Mobile Menu Button */}
+          <div className="flex flex-wrap justify-center sm:justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => {
               const newAudioEnabled = !audioEnabled
               setAudioEnabled(newAudioEnabled)
@@ -532,113 +546,126 @@ export default function TodoApp() {
                 setShowChangeNameDialog(true)
               }}
             >
-              <Settings className="h-4 w-4 mr-2" />
-              Đổi tên
+              <Settings className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Đổi tên</span>
             </Button>
             <Button variant="outline" size="sm" onClick={exportOldTodosToText} disabled={!hasOldTodos}>
-              📄 Xuất báo cáo
+              <FileText className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Xuất báo cáo</span>
             </Button>
             <Button variant="destructive" size="sm" onClick={handleDeleteOldTodos} disabled={!hasOldTodos}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Xóa todo cũ
+              <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Xóa todo cũ</span>
             </Button>
           </div>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Thêm công việc mới</CardTitle>
+        {/* Add Todo Form - Responsive */}
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-lg sm:text-xl">Thêm công việc mới</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4 items-end">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
               <div className="flex-1">
                 <label className="text-sm font-medium">Tên công việc</label>
                 <Input
                   value={newTodoName}
                   onChange={(e) => setNewTodoName(e.target.value)}
                   placeholder="Nhập tên công việc..."
+                  className="mt-1"
                 />
               </div>
-              <div className="w-20">
-                <label className="text-sm font-medium">Phút</label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={newTodoMinutes}
-                  onChange={(e) => setNewTodoMinutes(e.target.value)}
-                  placeholder="0"
-                />
+              <div className="flex gap-2 sm:gap-4">
+                <div className="w-20 sm:w-24">
+                  <label className="text-sm font-medium">Phút</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={newTodoMinutes}
+                    onChange={(e) => setNewTodoMinutes(e.target.value)}
+                    placeholder="0"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="w-20 sm:w-24">
+                  <label className="text-sm font-medium">Giây</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={newTodoSeconds}
+                    onChange={(e) => setNewTodoSeconds(e.target.value)}
+                    placeholder="0"
+                    className="mt-1"
+                  />
+                </div>
               </div>
-              <div className="w-20">
-                <label className="text-sm font-medium">Giây</label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={newTodoSeconds}
-                  onChange={(e) => setNewTodoSeconds(e.target.value)}
-                  placeholder="0"
-                />
-              </div>
-              <Button onClick={handleAddTodo}>
-                <Plus className="h-4 w-4 mr-2" />
-                Thêm
+              <Button onClick={handleAddTodo} className="mt-2 sm:mt-0">
+                <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="sm:inline">Thêm</span>
               </Button>
             </div>
           </CardContent>
         </Card>
 
+        {/* Todo List - Responsive */}
         <Card>
-          <CardHeader>
-            <CardTitle>Công việc hôm nay ({new Date().toLocaleDateString("vi-VN")})</CardTitle>
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-lg sm:text-xl">Công việc hôm nay ({new Date().toLocaleDateString("vi-VN")})</CardTitle>
           </CardHeader>
           <CardContent>
             {todayTodos.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">Chưa có công việc nào cho hôm nay</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {todayTodos.map((todo) => (
                   <div
                     key={todo.id}
-                    className={`flex items-center gap-4 p-4 rounded-lg border ${
+                    className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border ${
                       todo.completed ? "bg-muted/50" : "bg-card"
                     }`}
                   >
-                    <Button variant="ghost" size="sm" onClick={() => handleToggleComplete(todo.id)}>
-                      {todo.completed ? (
-                        <CheckCircle2 className="h-5 w-5 text-primary" />
-                      ) : (
-                        <Circle className="h-5 w-5" />
-                      )}
-                    </Button>
+                    {/* Todo Info */}
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                      <Button variant="ghost" size="sm" onClick={() => handleToggleComplete(todo.id)} className="mt-0.5">
+                        {todo.completed ? (
+                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                        ) : (
+                          <Circle className="h-5 w-5" />
+                        )}
+                      </Button>
 
-                    <div className="flex-1">
-                      <h3 className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}>
-                        {todo.name}
-                      </h3>
-                      {todo.hasTimer ? (
-                        <p className="text-sm text-muted-foreground">
-                          ⏱️ {(() => {
-                            const minutes = todo.pausedMinutes !== undefined ? todo.pausedMinutes : todo.minutes
-                            const seconds = todo.pausedSeconds !== undefined ? todo.pausedSeconds : todo.seconds
-                            return `${minutes}:${seconds.toString().padStart(2, "0")}`
-                          })()}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          📝 Task đơn giản
-                        </p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`font-medium text-sm sm:text-base break-words ${todo.completed ? "line-through text-muted-foreground" : ""}`}>
+                          {todo.name}
+                        </h3>
+                        {todo.hasTimer ? (
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                            ⏱️ {(() => {
+                              const minutes = todo.pausedMinutes !== undefined ? todo.pausedMinutes : todo.minutes
+                              const seconds = todo.pausedSeconds !== undefined ? todo.pausedSeconds : todo.seconds
+                              return `${minutes}:${seconds.toString().padStart(2, "0")}`
+                            })()}
+                          </p>
+                        ) : (
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                            📝 Task đơn giản
+                          </p>
+                        )}
+                      </div>
                     </div>
 
+                    {/* Timer Badge */}
                     {todo.isRunning && todo.endTime && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                      <Badge variant="secondary" className="flex items-center gap-1 self-start sm:self-center">
                         <Clock className="h-3 w-3" />
-                        {formatTimeRemaining(todo.endTime)}
+                        <span className="text-xs sm:text-sm">{formatTimeRemaining(todo.endTime)}</span>
                       </Badge>
                     )}
 
-                    <div className="flex items-center gap-2">
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 self-start sm:self-center">
                       {!todo.completed && todo.hasTimer && (
                         <Button
                           variant={todo.isRunning ? "destructive" : "default"}
@@ -660,10 +687,11 @@ export default function TodoApp() {
           </CardContent>
         </Card>
 
+        {/* Dialogs - Responsive */}
         <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md mx-4">
             <DialogHeader>
-              <DialogTitle>Chào mừng bạn đến với Todo List!</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">Chào mừng bạn đến với Todo List!</DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <label className="text-sm font-medium">Tên của bạn</label>
@@ -672,18 +700,19 @@ export default function TodoApp() {
                 onChange={(e) => setTempName(e.target.value)}
                 placeholder="Nhập tên của bạn..."
                 onKeyPress={(e) => e.key === "Enter" && handleSaveName()}
+                className="mt-2"
               />
             </div>
             <DialogFooter>
-              <Button onClick={handleSaveName}>Lưu</Button>
+              <Button onClick={handleSaveName} className="w-full sm:w-auto">Lưu</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         <Dialog open={showChangeNameDialog} onOpenChange={setShowChangeNameDialog}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md mx-4">
             <DialogHeader>
-              <DialogTitle>Đổi tên</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">Đổi tên</DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <label className="text-sm font-medium">Tên mới</label>
@@ -692,22 +721,23 @@ export default function TodoApp() {
                 onChange={(e) => setTempName(e.target.value)}
                 placeholder="Nhập tên mới..."
                 onKeyPress={(e) => e.key === "Enter" && handleSaveName()}
+                className="mt-2"
               />
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowChangeNameDialog(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setShowChangeNameDialog(false)} className="w-full sm:w-auto">
                 Hủy
               </Button>
-              <Button onClick={handleSaveName}>Lưu</Button>
+              <Button onClick={handleSaveName} className="w-full sm:w-auto">Lưu</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         <AlertDialog open={showDeleteOldDialog} onOpenChange={setShowDeleteOldDialog}>
-          <AlertDialogContent>
+          <AlertDialogContent className="mx-4">
             <AlertDialogHeader>
-              <AlertDialogTitle>Xác nhận xóa todo cũ</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-lg sm:text-xl">Xác nhận xóa todo cũ</AlertDialogTitle>
+              <AlertDialogDescription className="text-sm sm:text-base">
                 Bạn có chắc muốn xóa todo cũ không? 
                 <br />
                 <br />
@@ -716,26 +746,27 @@ export default function TodoApp() {
                 Hành động này không thể hoàn tác.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
-              <AlertDialogAction onClick={deleteOldTodos}>Xóa và xuất báo cáo</AlertDialogAction>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+              <AlertDialogCancel className="w-full sm:w-auto">Hủy</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteOldTodos} className="w-full sm:w-auto">Xóa và xuất báo cáo</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
         <AlertDialog open={showStopCurrentDialog} onOpenChange={setShowStopCurrentDialog}>
-          <AlertDialogContent>
+          <AlertDialogContent className="mx-4">
             <AlertDialogHeader>
-              <AlertDialogTitle>Dừng todo hiện tại?</AlertDialogTitle>
-              <AlertDialogDescription>Dừng todo hiện tại để bắt đầu todo mới?</AlertDialogDescription>
+              <AlertDialogTitle className="text-lg sm:text-xl">Dừng todo hiện tại?</AlertDialogTitle>
+              <AlertDialogDescription className="text-sm sm:text-base">Dừng todo hiện tại để bắt đầu todo mới?</AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+              <AlertDialogCancel className="w-full sm:w-auto">Hủy</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   pendingAction()
                   setShowStopCurrentDialog(false)
                 }}
+                className="w-full sm:w-auto"
               >
                 Đồng ý
               </AlertDialogAction>
@@ -744,13 +775,13 @@ export default function TodoApp() {
         </AlertDialog>
 
         <AlertDialog open={showDeleteRunningDialog} onOpenChange={setShowDeleteRunningDialog}>
-          <AlertDialogContent>
+          <AlertDialogContent className="mx-4">
             <AlertDialogHeader>
-              <AlertDialogTitle>Xóa todo đang chạy?</AlertDialogTitle>
-              <AlertDialogDescription>Todo này đang chạy countdown. Bạn có chắc muốn xóa không?</AlertDialogDescription>
+              <AlertDialogTitle className="text-lg sm:text-xl">Xóa todo đang chạy?</AlertDialogTitle>
+              <AlertDialogDescription className="text-sm sm:text-base">Todo này đang chạy countdown. Bạn có chắc muốn xóa không?</AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setTodoToDelete(null)}>Hủy</AlertDialogCancel>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+              <AlertDialogCancel onClick={() => setTodoToDelete(null)} className="w-full sm:w-auto">Hủy</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   if (todoToDelete) {
@@ -759,6 +790,7 @@ export default function TodoApp() {
                   }
                   setShowDeleteRunningDialog(false)
                 }}
+                className="w-full sm:w-auto"
               >
                 Xóa
               </AlertDialogAction>
@@ -766,6 +798,7 @@ export default function TodoApp() {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Countdown Popup - Responsive */}
         <Dialog  open={showCountdownPopup} onOpenChange={(open) => {
           if (!open) {
             if (countdownTodo) {
@@ -790,14 +823,13 @@ export default function TodoApp() {
           }
           setShowCountdownPopup(open)
         }}>
-          <DialogContent  className="sm:max-w-md">
-
+          <DialogContent className="sm:max-w-md mx-4">
             {countdownTodo && (
-              <div className="py-8 text-center">
-                <h3 className="text-lg font-semibold mb-6 text-foreground">{countdownTodo.name}</h3>
+              <div className="py-6 sm:py-8 text-center">
+                <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-foreground break-words">{countdownTodo.name}</h3>
 
-                <div className="mb-8">
-                  <div className="text-6xl font-mono font-bold text-primary mb-2">
+                <div className="mb-6 sm:mb-8">
+                  <div className="text-4xl sm:text-6xl font-mono font-bold text-primary mb-2">
                     {(() => {
                       if (countdownTodo.isRunning && countdownTodo.endTime) {
                         const remaining = getTimeRemaining(countdownTodo.endTime)
@@ -811,12 +843,12 @@ export default function TodoApp() {
                       }
                     })()}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {countdownTodo.isRunning ? "phút:giây" : "thời gian ban đầu"}
                   </p>
                 </div>
 
-                <div className="flex justify-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
                   <Button
                     variant={countdownTodo.isRunning ? "destructive" : "default"}
                     onClick={() => {
@@ -826,7 +858,7 @@ export default function TodoApp() {
                         handleStartTodo(countdownTodo.id)
                       }
                     }}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     {countdownTodo.isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                     {countdownTodo.isRunning ? "Dừng" : "Tiếp tục"}
@@ -839,7 +871,7 @@ export default function TodoApp() {
                       setShowCountdownPopup(false)
                       setCountdownTodo(null)
                     }}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <CheckCircle2 className="h-4 w-4" />
                     Hoàn thành

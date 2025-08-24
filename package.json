@@ -4,7 +4,7 @@
   "private": true,
   "description": "Ứng dụng Todo List tiếng Việt với timer countdown, thông báo âm thanh, và xuất báo cáo",
   "keywords": ["todo", "vietnamese", "timer", "countdown", "productivity", "pomodoro", "task-management"],
-  "author": "Vietnamese Todo App Team",
+  "author": "The best Todo App 2025 Team",
   "license": "MIT",
   "homepage": "https://vietnamese-todo-app.vercel.app",
   "scripts": {

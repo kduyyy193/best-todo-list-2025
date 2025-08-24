@@ -1,4 +1,4 @@
-# Vietnamese Todo App 🚀
+# The best Todo App 2025 🚀
 
 Ứng dụng Todo List tiếng Việt với timer countdown, thông báo âm thanh, và xuất báo cáo chi tiết.
 
@@ -128,7 +128,7 @@ Chúng tôi rất hoan nghênh mọi đóng góp! Vui lòng:
 
 ## 🙏 Cảm ơn
 
-Cảm ơn bạn đã sử dụng Vietnamese Todo App! 🎉
+Cảm ơn bạn đã sử dụng The best Todo App 2025! 🎉
 
 ---
 

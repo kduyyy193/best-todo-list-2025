@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color palette for Vietnamese todo app */
+  /* Updated color palette for The best Todo App 2025 */
   --background: #ffffff;
   --foreground: #475569;
   --card: #ecfeff;
@@ -121,5 +121,155 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Responsive Design Enhancements */
+@layer utilities {
+  /* Mobile-first responsive utilities */
+  .mobile-container {
+    @apply px-2 sm:px-4;
+  }
+  
+  .mobile-text {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-heading {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+  
+  .mobile-button {
+    @apply min-h-[44px] min-w-[44px] text-sm sm:text-base;
+  }
+  
+  .mobile-input {
+    @apply text-base sm:text-sm;
+  }
+  
+  /* Touch-friendly spacing */
+  .touch-spacing {
+    @apply gap-3 sm:gap-4;
+  }
+  
+  .touch-padding {
+    @apply p-3 sm:p-4;
+  }
+  
+  /* Mobile card improvements */
+  .mobile-card {
+    @apply rounded-lg border shadow-sm;
+  }
+  
+  /* Mobile dialog improvements */
+  .mobile-dialog {
+    @apply mx-4 max-w-[calc(100vw-2rem)] sm:max-w-md;
+  }
+  
+  /* Mobile form improvements */
+  .mobile-form-row {
+    @apply flex flex-col sm:flex-row gap-3 sm:gap-4;
+  }
+  
+  .mobile-form-input {
+    @apply flex-1;
+  }
+  
+  /* Mobile list improvements */
+  .mobile-list-item {
+    @apply flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4;
+  }
+  
+  /* Mobile button group */
+  .mobile-button-group {
+    @apply flex flex-wrap gap-2;
+  }
+  
+  /* Mobile badge */
+  .mobile-badge {
+    @apply text-xs sm:text-sm px-2 py-1;
+  }
+  
+  /* Mobile timer display */
+  .mobile-timer {
+    @apply text-3xl sm:text-4xl lg:text-6xl font-mono font-bold;
+  }
+  
+  /* Mobile safe area support */
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Prevent text selection on buttons for better UX */
+  button {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Improve scrolling performance */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better focus states for accessibility */
+  button:focus-visible,
+  input:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  
+  /* Improve dialog backdrop */
+  [data-radix-dialog-overlay] {
+    backdrop-filter: blur(4px);
+  }
+  
+  /* Better input appearance on mobile */
+  input[type="number"] {
+    -webkit-appearance: none;
+    margin: 0;
+    -moz-appearance: textfield;
+  }
+  
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --ring: #000000;
+  }
+  
+  .dark {
+    --border: #ffffff;
+    --ring: #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

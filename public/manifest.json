@@ -1,49 +1,83 @@
 {
-  "name": "Vietnamese Todo App - Quản lý công việc với Timer",
+  "name": "The best Todo App 2025 - Quản lý công việc với Timer",
   "short_name": "Vietnamese Todo",
-  "description": "Ứng dụng Todo List tiếng Việt với timer countdown, thông báo âm thanh, và xuất báo cáo",
+  "description": "Ứng dụng Todo List tiếng Việt với timer countdown, thông báo âm thanh, và xuất báo cáo. Responsive design cho mobile và desktop.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#164e63",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "vi",
   "dir": "ltr",
   "categories": ["productivity", "utilities", "business"],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/placeholder-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/placeholder-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/placeholder-logo.png",
       "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "384x384",
       "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshot-desktop.png",
+      "src": "/placeholder.jpg",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Vietnamese Todo App trên Desktop"
+      "label": "The best Todo App 2025 trên Desktop"
     },
     {
-      "src": "/screenshot-mobile.png",
+      "src": "/placeholder.jpg",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Vietnamese Todo App trên Mobile"
+      "label": "The best Todo App 2025 trên Mobile"
     }
   ],
   "shortcuts": [
@@ -54,7 +88,7 @@
       "url": "/?action=add",
       "icons": [
         {
-          "src": "/icon-add.png",
+          "src": "/placeholder-logo.png",
           "sizes": "96x96"
         }
       ]
@@ -66,10 +100,29 @@
       "url": "/?action=today",
       "icons": [
         {
-          "src": "/icon-today.png",
+          "src": "/placeholder-logo.png",
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "Timer đang chạy",
+      "short_name": "Timer",
+      "description": "Xem timer đang chạy",
+      "url": "/?action=timer",
+      "icons": [
+        {
+          "src": "/placeholder-logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "protocol_handlers": [
+    {
+      "protocol": "web+todo",
+      "url": "/?action=%s"
     }
   ]
 }
